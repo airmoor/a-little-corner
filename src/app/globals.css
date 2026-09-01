@@ -1,0 +1,562 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * The room is one fixed scene, exactly the height of the screen. Nothing here
+   * scrolls, ever — so the document is nailed down at both ends rather than
+   * being allowed to grow and then locked when it matters.
+   *
+   * Both elements are pinned: `overflow` set on `body` alone is quietly ignored
+   * by mobile Safari, and `overscroll-behavior` is what stops the rubber-band
+   * that would otherwise drag the whole page while the room is being panned.
+   */
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    @apply text-ink font-serif;
+    /* The plaster showing through anywhere the collage hasn't reached. */
+    background-color: #eae1ce;
+  }
+
+  ::selection {
+    background: rgba(198, 123, 84, 0.25);
+    color: #3b3327;
+  }
+}
+
+@layer components {
+  /*
+   * The room's measurements.
+   *
+   * `--room-w` is how wide the room is drawn. It never goes below 54rem: a
+   * window, a wall of photographs and a desk all have to fit side by side, and
+   * squeezing them into a phone's width would turn the scene back into a
+   * column of things. On anything narrower the sides simply hang off the
+   * screen, and `PanLayer` lets you go and look at them.
+   *
+   * `--wall-h` is where the wall stops and the floor starts — the horizon. It
+   * sits at just under three quarters, because the wall is the subject of this
+   * picture and the furniture is the frame around it. The desk's own back edge
+   * is placed to cross this line, so it reads as standing in the room instead
+   * of pasted onto a floor strip.
+   *
+   * `--board-w` / `--board-h` are the memory board: the panel of wall the
+   * photographs are pinned inside, and the single most important measurement
+   * here. It is a **fixed 1.6:1 rectangle** — one shape, two derived lengths,
+   * so the arrangement inside it can never distort.
+   *
+   * It exists because a photograph has to be sized against *the cluster*, not
+   * against the room. Sized against the room directly — a share of the width
+   * capped by a share of the height, as it used to be — a card's width in
+   * room-per-cent changed with the shape of the window: which of the two terms
+   * was binding decided it, so a gap of a quarter of a card on a narrow screen
+   * closed to nothing on a wide one. Rigid inside, free outside: the board
+   * scales as a unit, every photograph is a fixed fraction of it, and the
+   * composition holds its exact shape at every size.
+   *
+   * **Why 1.6:1 and not square.** The photographs are spread right across the
+   * wall now and never touch each other, and seven cards that may not overlap
+   * simply do not fit in a square: they need width. The wall's *height* is
+   * fixed (the desk is at 71%), so width is the only axis with any give — and
+   * the room has plenty of it. `99svh` is the height cap wearing a width's
+   * clothes: 99 ≈ 62 × 1.6, i.e. the board may stand 62svh tall and no more,
+   * which is what stops a wide, short screen hanging it down through the desk.
+   *
+   * The other two limits: a share of the room is normally in charge, and
+   * `135vw` is the phone rule.
+   *
+   * That number used to be `80vw` — the board was made to fit the screen
+   * whatever happened, because "the sides of a room may hang off the edge, the
+   * subject may not". A wall of seven photographs that never touch cannot obey
+   * that on a phone: made to fit, the cards came out 57px across and you could
+   * not see a face in one. So on a phone the board is now allowed to be about
+   * half a screen wider than the screen, and you drag along it — which is a
+   * mechanic the room already has, and a fair description of standing in front
+   * of a wall of photographs too close to take it all in. 135vw is where a card
+   * stays legible (~95px drawn) while roughly two thirds of the board is in
+   * frame at once. Push it further and the dragging starts to feel like work.
+   */
+  .scene {
+    --room-w: max(100vw, 54rem);
+    --wall-h: 71%;
+    --board-w: min(calc(var(--room-w) * 0.76), 99svh, 135vw);
+    --board-h: calc(var(--board-w) / 1.6);
+    --wall-card-w: calc(var(--board-w) * 0.145);
+    height: 100svh;
+  }
+
+  /*
+   * The phone, and the drag that finally looks *around the room*.
+   *
+   * The backdrop is one landscape plate (1672×941). Filled into a tall phone with
+   * `object-cover`, it scales to the height and crops its own sides off — the
+   * window and the shelf/clock/lamp go with them, and dragging only ever reveals
+   * more bare wall. The fix is to make the room exactly as wide as that plate is
+   * when it stands the full height of the screen: at `100svh × 1672/941` the box
+   * matches the image's own aspect, so `object-cover` shows the *whole* plate
+   * with nothing cropped, and `PanLayer` — which already hands you the room's
+   * overflow — lets you drag from the window on one side to the shelf on the
+   * other. Nothing about the vertical framing changes, so the photographs and the
+   * letter keep their exact places; there is simply a whole room to look across.
+   *
+   * Scoped to the phone so a tall desktop window never grows a pan it should not
+   * have.
+   */
+  @media (max-width: 640px) {
+    .scene {
+      --room-w: max(100vw, calc(100svh * 1672 / 941));
+    }
+  }
+
+  /*
+   * One step forward.
+   *
+   * The visitor is standing closer to the desk than the room is drawn for — a
+   * single step, not a zoom. It is a resting scale on the whole collage rather
+   * than a re-layout, because a step forward is exactly that: everything grows
+   * together, the sides and the top of the room fall outside the frame, and
+   * nothing in the composition moves relative to anything else.
+   *
+   * The origin is up at 32% for a reason. Scale about the middle and the
+   * photographs slide outward as they grow; scale about the height the board
+   * hangs at and they stay where they were put and simply come nearer, while
+   * the desk — below the origin — sinks further out of the bottom of the frame.
+   * Which is what stepping toward a wall does to the furniture in front of it.
+   *
+   * Safe for the camera rig: `measureFocusable` reads a photograph's box as it
+   * is actually drawn, so a constant ancestor scale is simply part of "as
+   * drawn". `PanLayer` measures its own unscaled `offsetWidth`, so the drag
+   * stops a little short of the true edge — never past it.
+   */
+  .step-in {
+    transform: scale(1.1);
+    transform-origin: 50% 32%;
+  }
+
+  /*
+   * A depth plane — one of the flats the room is built out of.
+   *
+   * The scene is staged, not projected: three sheets standing at different
+   * distances (the wall behind, the photographs on it, the desk in front), each
+   * drawn at its own scale and value. That is how a picture-book spread gets
+   * depth, and it keeps every object a flat paper cut-out — nothing here has a
+   * vanishing point.
+   *
+   * The planes no longer carry a transform at all. Each used to slide a few
+   * pixels under the pointer; see the note on `Plane.tsx` for why that went.
+   * All that is left here is the one rule that actually matters:
+   *
+   * A plane is a sheet of glass with things painted on it, and glass is not
+   * clickable.
+   *
+   * This is not a nicety — without it the room is inert. Every plane is
+   * `inset-0`, so each one covers the entire scene, and the desk sits at z-20
+   * over the photographs at z-10. The topmost sheet silently ate every pointer
+   * event in the room: the letter could not be opened, and neither could a
+   * single photograph, with nothing to see for it because the cursor still
+   * changed over the button underneath.
+   *
+   * So the sheets are inert and the things that open put themselves back: the
+   * envelope and the photographs are the only buttons in the scene, and the
+   * scenery around them is `aria-hidden` decoration that should never have been
+   * taking a click in the first place.
+   */
+  .plane {
+    pointer-events: none;
+  }
+  .plane button {
+    pointer-events: auto;
+  }
+
+  /*
+   * A prop answering the pointer: it lifts a little.
+   *
+   * Almost nothing in the room does this any more. The scene has exactly one
+   * thing to open, and a dozen objects that all lit up on hover was the reason
+   * it read as an illustration full of buttons rather than a room with a letter
+   * in it. Scenery is scenery now.
+   *
+   * A CSS transition rather than a motion value: it only ever responds to a
+   * pointer, and it should not hold a compositor layer while the camera works.
+   */
+  .prop-art {
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .prop:hover .prop-art,
+  .prop:focus-visible .prop-art {
+    transform: translateY(-5px);
+  }
+
+  /* Nothing in the room answers the pointer while the camera is moving. */
+  .camera-active .prop-art {
+    transition: none;
+  }
+
+  /*
+   * Paper grain. A fine speckle laid over the whole scene (and reusable on any
+   * positioned element) so nothing reads as flat digital fill.
+   */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /*
+   * A sheet of warm paper — the stock every card, note and label is cut from.
+   * Two very soft washes give it an uneven, hand-made surface (no gloss).
+   */
+  .paper {
+    background-color: #f6efdc;
+    background-image:
+      radial-gradient(
+        130% 120% at 12% 6%,
+        rgba(255, 253, 246, 0.55),
+        rgba(255, 253, 246, 0) 42%
+      ),
+      radial-gradient(
+        120% 130% at 92% 104%,
+        rgba(150, 120, 78, 0.12),
+        rgba(150, 120, 78, 0) 48%
+      );
+  }
+
+  /*
+   * Hand-torn, deckled edges + a flat, matte paper shadow (a single soft drop,
+   * never a realistic multi-layer one). Applied to the backing of a cut-out so
+   * the content laid on top stays crisp.
+   */
+  .torn {
+    filter: url(#torn) drop-shadow(2px 4px 2px rgba(74, 58, 40, 0.16));
+  }
+  .torn-sm {
+    filter: url(#torn-sm) drop-shadow(1px 2px 1px rgba(74, 58, 40, 0.14));
+  }
+  .torn-lg {
+    filter: url(#torn-lg) drop-shadow(4px 7px 4px rgba(74, 58, 40, 0.13));
+  }
+
+  /*
+   * The letter's own scrollbar.
+   *
+   * A page taken out of an envelope does not have a grey browser gutter down its
+   * side. When the note is long enough to scroll, the bar is drawn as the paper's
+   * own thing instead: hair-thin, no track, and the same warm brown as the paper
+   * shadow (`.torn`), so it reads as a soft crease at the edge rather than a
+   * control. It is still there and still draggable — just quiet.
+   */
+  .letter-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(74, 58, 40, 0.22) transparent;
+  }
+  .letter-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
+  .letter-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .letter-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(74, 58, 40, 0.2);
+    border-radius: 9999px;
+  }
+  .letter-scroll:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(74, 58, 40, 0.32);
+  }
+
+  /*
+   * A strip of washi tape: matte, a little see-through so the colour beneath
+   * shows, with softly torn ends. No sheen.
+   *
+   * The weave is measured in `em` so it holds its proportion on a card of any
+   * size — on the wall card that lands on the 6px/12px it always was.
+   *
+   * It lies on top of the photograph, so it casts onto it: a tight, soft shadow
+   * with barely any offset, the way something a fraction of a millimetre thick
+   * sits on paper. Long or dark and it stops being tape and starts being a
+   * label floating above the card.
+   */
+  .tape-strip {
+    background-color: rgba(238, 228, 205, 0.72);
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.12) 0 0.6em,
+      rgba(150, 120, 78, 0.06) 0.6em 1.2em
+    );
+    filter: url(#crayon);
+    box-shadow:
+      0 0.12em 0.24em rgba(74, 58, 40, 0.17),
+      0 0.02em 0.04em rgba(74, 58, 40, 0.12);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /*
+   * The breathing room around the opened memory. A plain padding everywhere
+   * except where a phone's notch, rounded corner or home indicator eats into
+   * the screen — there it grows to clear it, so the photo is never cropped by
+   * the hardware.
+   */
+  .stage-inset {
+    padding: max(1rem, env(safe-area-inset-top))
+      max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+  }
+
+  @media (min-width: 640px) {
+    .stage-inset {
+      padding: max(1.5rem, env(safe-area-inset-top))
+        max(1.5rem, env(safe-area-inset-right))
+        max(1.5rem, env(safe-area-inset-bottom))
+        max(1.5rem, env(safe-area-inset-left));
+    }
+  }
+}
+
+/*
+ * Ambient life.
+ *
+ * The whole room drifts by a hair so it never feels frozen — like an old
+ * illustrated book quietly breathing. Amplitudes are tiny, durations are long
+ * and deliberately un-round, and callers stagger their own duration/delay, so
+ * nothing lines up into an obvious loop.
+ */
+@keyframes breathe {
+  from {
+    transform: translateY(0) rotate(-0.3deg) scale(1);
+  }
+  to {
+    transform: translateY(-3px) rotate(0.3deg) scale(1.006);
+  }
+}
+.breathe {
+  animation: breathe 11s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes breathe-tilt {
+  from {
+    transform: rotate(-1.4deg) scale(1);
+  }
+  to {
+    transform: rotate(-0.6deg) scale(1.006);
+  }
+}
+.breathe-tilt {
+  animation: breathe-tilt 13s ease-in-out infinite alternate;
+}
+
+@keyframes sway {
+  from {
+    transform: rotate(-0.5deg);
+  }
+  to {
+    transform: rotate(0.5deg);
+  }
+}
+.sway-top {
+  transform-origin: top center;
+  animation: sway 11s ease-in-out infinite alternate;
+}
+.sway-hang {
+  transform-origin: top center;
+  animation: sway 8.5s ease-in-out infinite alternate;
+}
+.sway-root {
+  transform-origin: bottom center;
+  animation: sway 7.5s ease-in-out infinite alternate;
+}
+
+@keyframes wash-drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-1.4%, 1.1%) scale(1.05);
+  }
+}
+.wash-drift {
+  transform-origin: center;
+  animation: wash-drift 52s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes light-breathe {
+  from {
+    opacity: 0.04;
+    transform: translate(-1%, -0.5%);
+  }
+  to {
+    opacity: 0.14;
+    transform: translate(1.6%, 1%);
+  }
+}
+.light-breathe {
+  animation: light-breathe 24s ease-in-out infinite alternate;
+  will-change: opacity, transform;
+}
+
+@keyframes glow-breathe {
+  from {
+    opacity: 0.32;
+  }
+  to {
+    opacity: 0.6;
+  }
+}
+.glow-breathe {
+  animation: glow-breathe 9s ease-in-out infinite alternate;
+}
+
+/*
+ * The letter, waiting.
+ *
+ * The one object in the room that is asking to be opened, so it is the one
+ * object that moves on its own — a couple of pixels, over seven seconds. Not a
+ * pulse and not a bounce: an attractor that reads as breath, because the moment
+ * it reads as a prompt the room becomes an interface again.
+ */
+@keyframes letter-wait {
+  from {
+    transform: translateY(0.6px);
+  }
+  to {
+    transform: translateY(-2.4px);
+  }
+}
+.letter-wait {
+  animation: letter-wait 7s ease-in-out infinite alternate;
+}
+
+/*
+ * The shaft from the window, on its own clock.
+ *
+ * It cannot share `light-breathe`: that one runs between 0.04 and 0.14 to lay a
+ * whisper of warmth over the whole screen, and multiplied into the shaft's own
+ * path opacities it took the beam to about two per cent — drawn, composited, and
+ * completely invisible. A beam has to be faint but it does have to be there.
+ */
+@keyframes shaft-breathe {
+  from {
+    opacity: 0.45;
+    transform: translateX(-0.4%);
+  }
+  to {
+    opacity: 0.78;
+    transform: translateX(0.6%);
+  }
+}
+.shaft-breathe {
+  animation: shaft-breathe 28s ease-in-out infinite alternate;
+}
+
+/* The pool of light the letter sits in, brightening and easing off very slowly
+   — the only thing lighting one object more than the rest of the room. */
+@keyframes pool-breathe {
+  from {
+    opacity: 0.35;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 0.6;
+    transform: scale(1.04);
+  }
+}
+.pool-breathe {
+  transform-origin: center;
+  animation: pool-breathe 13s ease-in-out infinite alternate;
+}
+
+/* A speck of dust catching the light, drifting up and slowly fading. */
+@keyframes mote {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  14% {
+    opacity: var(--mote-o, 0.2);
+  }
+  86% {
+    opacity: var(--mote-o, 0.2);
+  }
+  100% {
+    transform: translate(var(--mote-x, 20px), var(--mote-y, -140px));
+    opacity: 0;
+  }
+}
+.mote {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 250, 236, 0.95),
+    rgba(255, 250, 236, 0) 70%
+  );
+  animation: mote var(--mote-dur, 26s) linear infinite;
+  will-change: transform, opacity;
+}
+
+/*
+ * While the camera is moving toward a memory, the room holds its breath. Seven
+ * infinite transform animations competing with the push is compositor work that
+ * buys nothing during the shot — and the wall is scaling past the viewer anyway.
+ */
+.camera-active .breathe,
+.camera-active .breathe-tilt,
+.camera-active .sway-top,
+.camera-active .sway-hang,
+.camera-active .sway-root,
+.camera-active .wash-drift,
+.camera-active .letter-wait,
+.camera-active .pool-breathe,
+.camera-active .shaft-breathe,
+.camera-active .mote {
+  animation-play-state: paused;
+}
+
+/*
+ * There used to be a rule here dropping the planes' `will-change` during a
+ * shot, and a long note about why they had to be *frozen* rather than reset
+ * (the camera measures a photograph from its live box at the click, with the
+ * plane's slide already in it — snapping the plane straight afterwards would
+ * move the wall out from under a flight already in the air).
+ *
+ * The planes hold still by themselves now. Worth knowing that the whole class
+ * of bug is gone with them: nothing between a photograph and the viewport moves
+ * except the camera itself.
+ */
+
+/* Anyone who prefers less motion gets the collage already settled. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
