@@ -148,6 +148,69 @@ function Scene({ scene, tint }: { scene: SceneKind; tint: string }) {
           <rect x="120" y="168" width="16" height="10" rx="2" fill={deep(0.35)} />
         </>
       );
+    case "mountains":
+      return (
+        <>
+          <rect width="200" height="250" fill={tint} />
+          <rect width="200" height="150" fill={lift(0.36)} />
+          <circle cx="54" cy="58" r="16" fill={IVORY} opacity="0.9" />
+          <path d="M0 170 L46 96 L74 132 L112 70 L152 128 L176 104 L200 136 L200 250 L0 250 Z" fill={deep(0.26)} />
+          <path d="M112 70 L98 92 L106 88 L114 96 L122 86 L127 92 Z" fill={IVORY} />
+          <path d="M46 96 L38 110 L46 106 L52 112 L56 104 Z" fill={IVORY} opacity="0.9" />
+          <path d="M0 190 Q30 176 62 186 Q100 170 140 184 Q172 174 200 182 L200 214 L0 214 Z" fill={lift(0.7)} />
+          <path d="M0 214 Q50 204 100 212 Q150 220 200 208 L200 250 L0 250 Z" fill={lift(0.55)} />
+        </>
+      );
+    case "lake":
+      return (
+        <>
+          <rect width="200" height="250" fill={tint} />
+          <rect width="200" height="128" fill={lift(0.34)} />
+          <path d="M0 128 L0 102 Q40 80 84 98 Q128 76 170 94 Q186 90 200 96 L200 128 Z" fill={deep(0.24)} />
+          <rect y="128" width="200" height="122" fill={lift(0.14)} />
+          <path d="M0 128 L0 150 Q40 168 84 154 Q128 172 170 158 Q186 162 200 156 L200 128 Z" fill={deep(0.1)} />
+          <path d="M28 188 L76 188" stroke={lift(0.5)} strokeWidth="2.4" strokeLinecap="round" />
+          <path d="M108 204 L168 204" stroke={lift(0.45)} strokeWidth="2.4" strokeLinecap="round" />
+          <path d="M52 226 L92 226" stroke={lift(0.4)} strokeWidth="2.2" strokeLinecap="round" />
+        </>
+      );
+    case "rain":
+      return (
+        <>
+          <rect width="200" height="250" fill={tint} />
+          <rect width="200" height="250" fill={deep(0.16)} />
+          {Array.from({ length: 14 }, (_, i) => {
+            const x = (i * 37) % 200;
+            const y = (i * 53) % 150;
+            return (
+              <path
+                key={i}
+                d={`M${x} ${y} l-8 22`}
+                stroke={lift(0.45)}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            );
+          })}
+          <path d="M52 150 Q100 96 148 150 Q136 142 124 150 Q112 142 100 150 Q88 142 76 150 Q64 142 52 150 Z" fill={IVORY} />
+          <path d="M100 150 L100 206 Q100 216 90 214" stroke={deep(0.45)} strokeWidth="3.2" fill="none" strokeLinecap="round" />
+          <path d="M0 226 Q100 216 200 226 L200 250 L0 250 Z" fill={deep(0.22)} />
+        </>
+      );
+    case "cup":
+      return (
+        <>
+          <rect width="200" height="250" fill={tint} />
+          <rect width="200" height="250" fill={lift(0.12)} />
+          <circle cx="100" cy="138" r="70" fill={CREAM} />
+          <circle cx="100" cy="138" r="56" fill={deep(0.08)} />
+          <circle cx="100" cy="138" r="48" fill={IVORY} />
+          <circle cx="100" cy="138" r="38" fill="#6B4A32" />
+          <circle cx="92" cy="130" r="9" fill="#8A6446" opacity="0.7" />
+          <path d="M148 132 Q170 130 170 146 Q170 160 148 156" stroke={IVORY} strokeWidth="9" fill="none" strokeLinecap="round" />
+          <path d="M78 52 Q70 36 82 26 M104 50 Q96 34 108 22" stroke={lift(0.6)} strokeWidth="3" fill="none" strokeLinecap="round" />
+        </>
+      );
     case "hills":
     default:
       return (

@@ -7,7 +7,11 @@ export type SceneKind =
   | "path"
   | "sea"
   | "field"
-  | "window";
+  | "window"
+  | "mountains"
+  | "lake"
+  | "rain"
+  | "cup";
 
 /**
  * A single memory pinned to the wall.
