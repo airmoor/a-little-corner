@@ -80,23 +80,32 @@ export default function PaperDefs() {
           />
         </filter>
 
+        {/*
+          The painted stand-ins. Low-frequency turbulence bends every edge the
+          way a loaded brush does, the blur lets it bleed, and a touch of
+          desaturation pulls the shapes back to the muted pigments of the room
+          they hang in — without it they read as flat vector icons on a
+          watercolour wall. It is applied in viewBox units (200 x 250), so the
+          wobble scales with the card rather than staying a fixed pixel size.
+        */}
         <filter id="gouache" x="-12%" y="-12%" width="124%" height="124%">
           <feTurbulence
             type="fractalNoise"
-            baseFrequency="0.02"
-            numOctaves="2"
+            baseFrequency="0.013 0.016"
+            numOctaves="3"
             seed="9"
             result="n"
           />
           <feDisplacementMap
             in="SourceGraphic"
             in2="n"
-            scale="2.4"
+            scale="5"
             xChannelSelector="R"
             yChannelSelector="G"
             result="d"
           />
-          <feGaussianBlur in="d" stdDeviation="0.5" />
+          <feGaussianBlur in="d" stdDeviation="0.7" result="b" />
+          <feColorMatrix in="b" type="saturate" values="0.82" />
         </filter>
 
         <filter id="crayon" x="-15%" y="-15%" width="130%" height="130%">

@@ -239,15 +239,20 @@ export default function MemoryScene({
   tint: string;
 }) {
   return (
-    <svg
-      viewBox="0 0 200 250"
-      preserveAspectRatio="xMidYMid slice"
-      className="h-full w-full"
-      aria-hidden
-    >
-      <g filter="url(#gouache)">
-        <Scene scene={scene} tint={tint} />
-      </g>
-    </svg>
+    <div className="relative h-full w-full" aria-hidden>
+      <svg
+        viewBox="0 0 200 250"
+        preserveAspectRatio="xMidYMid slice"
+        className="h-full w-full"
+      >
+        <g filter="url(#gouache)">
+          <Scene scene={scene} tint={tint} />
+        </g>
+      </svg>
+      {/* Paper tooth, uneven wash and pigment pooling at the edges — all one
+          static bitmap layer (see `.scene-paper`), so it costs nothing when the
+          camera scales the card. */}
+      <span className="scene-paper" />
+    </div>
   );
 }
