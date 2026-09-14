@@ -37,12 +37,12 @@ export default function StepBack({
       initial={false}
       animate={{ opacity: shown ? 1 : 0 }}
       transition={{ duration: reduced ? 0.001 : 0.6, ease: CALM }}
-      className="absolute -right-3 -top-4 z-20 flex h-9 w-9 -rotate-6 items-center justify-center text-ink-soft outline-none transition hover:text-ink hover:brightness-105 focus-visible:ring-2 focus-visible:ring-terracotta/70 focus-visible:ring-offset-2"
+      className="absolute -right-4 -top-5 z-20 flex h-11 w-11 -rotate-6 items-center justify-center text-ink-soft outline-none transition hover:text-ink hover:brightness-105 focus-visible:ring-2 focus-visible:ring-terracotta/70 focus-visible:ring-offset-2"
     >
       {/* The paper it was torn from, kept behind the mark: the deckle filter
           roughs up the edge of whatever it touches, so the cross laid on top
           stays crisp — the same split the sheet itself uses. */}
-      <span aria-hidden className="paper torn-sm absolute inset-0" />
+      <span aria-hidden className="paper torn-sm absolute inset-1" />
 
       {/* Drawn rather than typed. A text "×" hangs off the typewriter face's
           math axis — above the optical centre — and its straight, square-ended

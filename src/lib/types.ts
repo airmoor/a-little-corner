@@ -25,6 +25,8 @@ export interface Memory {
   caption: string;
   /** The longer note revealed when a memory is opened. */
   note: string;
+  /** When / where, shown above the note — e.g. "june · the coast road". */
+  when?: string;
   /** Path to a photo in /public, e.g. "/memories/lisbon.jpg". Optional. */
   image?: string;
   /** Warm tint used as a placeholder (and as a mat behind the photo). */

@@ -195,6 +195,14 @@ export default function CinemaMemory() {
           style={{ transformOrigin: "top center" }}
           className="pointer-events-auto relative flex min-h-0 w-full min-w-0 max-w-sm flex-col justify-center"
         >
+          {/* Lifts the sheet off whatever is behind it — in the pushed-in room
+              that is often the next photograph along. A plain box-shadow on
+              its own layer, so the torn filter never has to draw it. */}
+          <div
+            aria-hidden
+            className="absolute inset-2 rounded-sm"
+            style={{ boxShadow: "0 22px 48px rgba(18,12,4,0.45), 0 4px 12px rgba(18,12,4,0.25)" }}
+          />
           <div className="paper torn absolute inset-0" />
           {/* Long notes scroll here rather than pushing the layout past the
               viewport. Vertical only — `overflow-x-hidden` is explicit so the
@@ -202,13 +210,16 @@ export default function CinemaMemory() {
               scroll is kept to this sheet, so reaching its end doesn't hand the
               gesture to the room behind. */}
           <div className="relative max-h-full overflow-y-auto overflow-x-hidden overscroll-contain px-8 py-9 [touch-action:pan-y] sm:max-h-[70svh]">
-            <span className="font-type text-[0.7rem] uppercase tracking-[0.2em] text-ink-soft">
-              {memory.caption}
-            </span>
-            <p className="mt-4 font-serif text-lg italic leading-relaxed text-ink text-balance">
+            {/* When and where, if the memory knows. Not the caption again —
+                that is written on the photograph right beside it. */}
+            {memory.when && (
+              <span className="mb-4 block font-type text-xs uppercase tracking-[0.18em] text-ink">
+                {memory.when}
+              </span>
+            )}
+            <p className="font-serif text-lg italic leading-relaxed text-ink text-balance">
               {memory.note}
             </p>
-            <span className="mt-6 block font-hand text-2xl text-terracotta">♡</span>
           </div>
 
           <StepBack

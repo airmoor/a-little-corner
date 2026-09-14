@@ -44,14 +44,20 @@ export default function Vignette() {
          * started out with, the 38% stop landed ~700px out and the room never
          * actually got dark — the wall behind stayed bright enough to compete
          * with the photograph in front of it.
+         *
+         * Even the centre is no longer clear. The room is pushed in behind the
+         * memory, so its neighbours sit right next to it at nearly the same
+         * size; left lit, they read as a second card opened alongside. Blur
+         * would separate them better but would re-rasterise the scaled room
+         * every frame, so the separation is done with light alone.
          */
         background:
-          "radial-gradient(72% 64% at 50% 50%, rgba(24,16,7,0) 0%, rgba(24,16,7,0.5) 46%, rgba(18,12,4,0.92) 100%)",
+          "radial-gradient(72% 64% at 50% 50%, rgba(24,16,7,0.42) 0%, rgba(24,16,7,0.68) 46%, rgba(18,12,4,0.94) 100%)",
       }}
       /* This sheet covers the whole screen, so it is where a stray drag lands.
          Swallowing the gesture keeps a touch from rubber-banding the page or
          reaching the room's pan behind it. */
-      className="fixed inset-0 z-40 cursor-default touch-none"
+      className="fixed inset-0 z-40 cursor-zoom-out touch-none"
     />
   );
 }
