@@ -1,14 +1,11 @@
 /**
- * Everything the room says.
+ * ✏️  THE LETTER IN THE ENVELOPE — edit this file to write your own.
  *
- * Kept away from the drawing so the words can be changed without going anywhere
- * near the furniture. The room says exactly one thing, because there is exactly
- * one thing in it to open.
+ *   eyebrow  the small line at the top, e.g. "happy birthday" or "for you"
+ *   lines    the letter itself, one string per paragraph
+ *   sign     how it is signed — a name, an initial, or a mark
  */
-
 export const letter = {
-  /** Read out to anyone who can't see the envelope. */
-  label: "an envelope on the desk",
   eyebrow: "a note on the desk",
   lines: [
     "This is a little corner for the moments too small for an album — a first coffee, a wrong turn, a sky worth getting up early for.",
@@ -16,4 +13,6 @@ export const letter = {
     "Everything here is a painted stand-in. Put your own photographs up and write your own letter — the wall is made to be yours.",
   ],
   sign: "♡",
+  /** Read out by screen readers in place of the envelope. */
+  label: "an envelope on the desk",
 };

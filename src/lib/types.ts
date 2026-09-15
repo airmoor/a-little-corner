@@ -51,3 +51,8 @@ export interface Memory {
    */
   z: number;
 }
+
+/** The part of a memory you write — see `src/content/memories.ts`. */
+export type MemoryContent = Pick<Memory, "caption" | "note" | "when" | "image" | "scene"> & {
+  tint?: string;
+};

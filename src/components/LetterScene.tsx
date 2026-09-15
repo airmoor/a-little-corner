@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { letter } from "@/data/room";
+import { letter } from "@/content/letter";
 import { CALM, useCamera } from "./camera/CameraProvider";
 import StepBack from "./StepBack";
 

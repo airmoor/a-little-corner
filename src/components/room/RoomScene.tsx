@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { memories } from "@/data/memories";
-import { letter } from "@/data/room";
+import { letter } from "@/content/letter";
 import { motion } from "framer-motion";
 import PolaroidCard from "../PolaroidCard";
 import { CALM, ENVELOPE_ID, useCamera } from "../camera/CameraProvider";

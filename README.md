@@ -7,7 +7,36 @@ gallery.
 
 > This is the public version of a personal project — a gift made for one person.
 > The original photographs and letter were replaced with hand-painted stand-ins;
-> everything else is the same code.
+> the room, the camera and the paper are the original code.
+
+## Make your own
+
+You can turn this into a wall of your own — for a trip, a year, or as a gift —
+by editing two files and dropping in your photos. No code changes needed.
+
+1. **Fork or clone** this repository.
+2. **Add your photos** to [`public/memories/`](public/memories). Up to ten,
+   portrait (about 4:5), around 1100px wide.
+3. **Write the memories** in [`src/content/memories.ts`](src/content/memories.ts) —
+   one entry per photo, in order along the wall:
+
+   ```ts
+   {
+     caption: "the last swim",               // handwritten under the photo
+     when: "september · the cove",            // small line above the note (optional)
+     note: "The water was colder than it looked, and I went in anyway.",
+     image: "/memories/cove.jpg",             // your photo; leave out to keep the painting
+   },
+   ```
+
+4. **Write the letter** in [`src/content/letter.ts`](src/content/letter.ts) —
+   the line at the top, one string per paragraph, and a signature.
+5. **Run it** with `npm install && npm run dev`, then deploy — for example, import
+   the repository into [Vercel](https://vercel.com/new); it needs no settings.
+
+The positions, tilt and tape for ten cards are already composed, so the wall
+stays balanced whatever you put on it. Fewer than ten works too — the remaining
+slots stay empty.
 
 ## Stack
 
@@ -51,19 +80,6 @@ npm run dev
 
 Then open [http://localhost:3000](http://localhost:3000).
 
-## Making it yours
-
-Everything on the wall comes from two files:
-
-- [`src/data/memories.ts`](src/data/memories.ts) — each memory's `caption`, `note`,
-  resting `rotate`, `tape` style and `x` / `y` position on the board.
-- [`src/data/room.ts`](src/data/room.ts) — the letter in the envelope.
-
-To use real photographs, drop them into `public/memories/` and set a memory's
-`image`, e.g. `image: "/memories/lisbon.jpg"`. A portrait crop near 4:5 fits the
-frame best. Without an image, the frame shows a painted scene (`scene`) in the
-memory's `tint`.
-
 ## Structure
 
 ```
@@ -78,6 +94,7 @@ src/
     CinemaMemory        a memory held up to the viewer, with its note
     LetterScene         the letter from the envelope
     paper/              SVG paper filters and painted placeholder scenes
-  data/                 memories and the letter
+  content/              ✏️ the words and photos — memories and the letter
+  data/                 the arrangement of the ten cards on the wall
   lib/                  types and hooks
 ```

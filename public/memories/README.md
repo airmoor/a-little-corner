@@ -1,11 +1,11 @@
-# Photos go here
+# Your photos go here
 
-Drop your Polaroid photos into this folder, then point a memory at one in
-`src/data/memories.ts`:
+Drop up to ten photos into this folder, then point a memory at each one in
+[`src/content/memories.ts`](../../src/content/memories.ts):
 
 ```ts
 image: "/memories/lisbon.jpg",
 ```
 
-A portrait crop near 4:5 fits the frame best. Until an image is set, the frame
-shows a warm placeholder tint.
+Portrait crops near 4:5 fit the frame best; about 1100px wide is plenty.
+Without an image, a card shows its painted `scene` instead.

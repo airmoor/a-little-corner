@@ -1,3 +1,4 @@
+import { memories as content } from "@/content/memories";
 import type { Memory } from "@/lib/types";
 
 /**
@@ -30,155 +31,43 @@ import type { Memory } from "@/lib/types";
  * `z` decides nothing at rest (nothing overlaps); it is kept ordered
  * high-on-the-wall-first as a tie-break.
  *
- * ## Demo content
+ * ## Where the words and pictures live
  *
- * This public version ships painted stand-ins (`scene`) instead of photographs.
- * To use real photos, drop them into `public/memories/` and set `image` — the
- * `tint` then becomes the mat behind the photo while it loads.
+ * Not here. This file is only the arrangement: ten slots, each with a place,
+ * a tilt and a default tint. What goes in them — captions, notes, photos —
+ * is in `src/content/memories.ts`, matched to the slots in order.
  */
-export const memories: Memory[] = [
-  {
-    /* Low band, far left — fills the wall under the window and holds the bottom
-       corner down. */
-    id: "first-light",
-    caption: "first light",
-    note: "Out of the door before the town woke up. No plan beyond the next bend in the road.",
-    when: "may · the coast road",
-    scene: "path",
-    tint: "#8A6A4A",
-    rotate: 4,
-    tape: "top",
-    x: -5,
-    y: 66,
-    z: 5,
-  },
-  {
-    /* First on the high walk, up where the eye comes in. */
-    id: "rainy-sunday",
-    caption: "rainy sunday",
-    note: "Tea going cold on the sill, rain on the glass, nowhere to be. The best kind of slow.",
-    when: "a sunday in march",
-    scene: "window",
-    tint: "#8A7A70",
-    rotate: -5,
-    tape: "top",
-    x: 18,
-    y: 20,
-    z: 10,
-  },
-  {
-    /* Low band — a still lake to break the gutter under the first. */
-    id: "still-water",
-    caption: "still water",
-    note: "I was aiming for the far shore and never made it. This is the view from where I gave up — not a bad place to give up.",
-    when: "august · the far shore",
-    scene: "lake",
-    tint: "#8C99A2",
-    rotate: -6,
-    tape: "top",
-    x: 22,
-    y: 79,
-    z: 4,
-  },
-  {
-    /* Middle of the high band, and roughly the middle of the wall. */
-    id: "caught-in-the-rain",
-    caption: "caught in the rain",
-    note: "Forty minutes from shelter when the sky opened. Soaked through, and laughing the whole way back.",
-    when: "april · the ridge path",
-    scene: "rain",
-    tint: "#B48893",
-    rotate: -5,
-    tape: "top",
-    x: 39,
-    y: 27,
-    z: 9,
-  },
-  {
-    /* Low band, dead centre — the bridge across the empty middle of the wall. */
-    id: "second-coffee",
-    caption: "second coffee",
-    note: "A corner table, a second coffee, a page of notes that went nowhere. Some mornings are just for sitting.",
-    when: "a tuesday, mid-morning",
-    scene: "cup",
-    tint: "#B68E79",
-    rotate: 5,
-    tape: "top",
-    x: 47,
-    y: 67,
-    z: 3,
-  },
-  {
-    /* The anchor: the strongest image, the straightest card (2°), with the widest
-       margin of bare wall. It sits right of centre so the wall never settles into
-       the middle. */
-    id: "above-the-clouds",
-    caption: "above the clouds",
-    note: "Up at five and completely worth it. The valley was full of cloud, and the peaks floated on top of it.",
-    when: "july · 5:40 a.m.",
-    scene: "mountains",
-    tint: "#6E9B96",
-    rotate: 2,
-    tape: "top",
-    x: 59,
-    y: 16,
-    z: 8,
-  },
-  {
-    /* Low band, right of centre. */
-    id: "wildflowers",
-    caption: "wildflowers",
-    note: "A verge of wildflowers by a bus stop in the middle of nowhere. The bus was late; nobody minded.",
-    when: "june · somewhere inland",
-    scene: "field",
-    tint: "#A3AE7C",
-    rotate: 4,
-    tape: "top",
-    x: 66,
-    y: 82,
-    z: 2,
-  },
-  {
-    /* High band, out toward the right. */
-    id: "the-last-swim",
-    caption: "the last swim",
-    note: "The water was colder than it looked, and I went in anyway. The last swim of the summer, and the best one.",
-    when: "september · the cove",
-    scene: "sea",
-    tint: "#5F8A96",
-    rotate: 4,
-    tape: "top",
-    x: 77,
-    y: 29,
-    z: 7,
-  },
-  {
-    /* High band, far right — the quietest picture. */
-    id: "town-at-night",
-    caption: "the town at night",
-    note: "Lit windows all the way up the hill, every one of them somebody else's evening.",
-    when: "october · the old town",
-    scene: "night",
-    tint: "#D4A24A",
-    rotate: -5,
-    tape: "top",
-    x: 93,
-    y: 22,
-    z: 1,
-  },
-  {
-    /* The end of the walk: bottom-right, the last stop — it leads the eye down
-       toward the letter on the desk. */
-    id: "the-long-way-home",
-    caption: "the long way home",
-    note: "Took the slow road back on purpose. Some days you don't want to arrive.",
-    when: "the last day",
-    scene: "hills",
-    tint: "#8F7A66",
-    rotate: 4,
-    tape: "top",
-    x: 85,
-    y: 72,
-    z: 6,
-  },
+const slots: Array<Pick<Memory, "tint" | "rotate" | "tape" | "x" | "y" | "z">> = [
+  /* Low band, far left — fills the wall under the window and holds the bottom
+     corner down. */
+  { tint: "#8A6A4A", rotate: 4, tape: "top", x: -5, y: 66, z: 5 },
+  /* First on the high walk, up where the eye comes in. */
+  { tint: "#8A7A70", rotate: -5, tape: "top", x: 18, y: 20, z: 10 },
+  /* Low band — a still lake to break the gutter under the first. */
+  { tint: "#8C99A2", rotate: -6, tape: "top", x: 22, y: 79, z: 4 },
+  /* Middle of the high band, and roughly the middle of the wall. */
+  { tint: "#B48893", rotate: -5, tape: "top", x: 39, y: 27, z: 9 },
+  /* Low band, dead centre — the bridge across the empty middle of the wall. */
+  { tint: "#B68E79", rotate: 5, tape: "top", x: 47, y: 67, z: 3 },
+  /* The anchor: the strongest image, the straightest card (2°), with the widest
+     margin of bare wall. It sits right of centre so the wall never settles into
+     the middle. */
+  { tint: "#6E9B96", rotate: 2, tape: "top", x: 59, y: 16, z: 8 },
+  /* Low band, right of centre. */
+  { tint: "#A3AE7C", rotate: 4, tape: "top", x: 66, y: 82, z: 2 },
+  /* High band, out toward the right. */
+  { tint: "#5F8A96", rotate: 4, tape: "top", x: 77, y: 29, z: 7 },
+  /* High band, far right — the quietest picture. */
+  { tint: "#D4A24A", rotate: -5, tape: "top", x: 93, y: 22, z: 1 },
+  /* The end of the walk: bottom-right, the last stop — it leads the eye down
+     toward the letter on the desk. */
+  { tint: "#8F7A66", rotate: 4, tape: "top", x: 85, y: 72, z: 6 },
 ];
+
+/** Content laid onto the slots, in order. Anything past the tenth is ignored. */
+export const memories: Memory[] = content.slice(0, slots.length).map((item, i) => ({
+  id: `memory-${i + 1}`,
+  ...slots[i],
+  ...item,
+  tint: item.tint ?? slots[i].tint,
+}));
